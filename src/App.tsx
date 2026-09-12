@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import {
   ArrowDownLeft,
@@ -97,7 +98,6 @@ function formatarData(data: string) {
 function obterNomeTipo(tipo: string) {
   const tipos: Record<string, string> = {
     transferencia: 'Transferência',
-    taxa: 'Taxa',
     emissao: 'Emissão de DIN',
     correcao: 'Correção',
     investimento: 'Investimento',
@@ -124,10 +124,6 @@ function obterIconeTransacao(
 
   if (transacao.tipo === 'poupanca_rendimento') {
     return <PiggyBank size={18} />
-  }
-
-  if (transacao.tipo === 'taxa') {
-    return <ArrowUpRight size={18} />
   }
 
   if (transacao.conta_destino_id === contaId) {
@@ -178,10 +174,6 @@ function obterTextoPessoa(
 
   if (transacao.tipo === 'poupanca_rendimento') {
     return 'Rendimento automático'
-  }
-
-  if (transacao.tipo === 'taxa') {
-    return 'Banco Central dos Guris'
   }
 
   if (transacao.tipo === 'emissao') {
@@ -238,47 +230,51 @@ function App() {
     useState(false)
 
   useEffect(() => {
-  verificarSessao()
+    verificarSessao()
 
-  const intervalo = setInterval(async () => {
-    const { data } =
-      await supabase.auth.getSession()
+    const intervalo = setInterval(async () => {
+      const { data } =
+        await supabase.auth.getSession()
 
-    if (!data.session) return
+      if (!data.session) return
 
-    await carregarDashboard(
-      data.session.user.id
-    )
+      await carregarDashboard(
+        data.session.user.id
+      )
 
-    const { data: poupancaData } =
-      await supabase
-        .from('poupancas')
-        .select(
-          'saldo_subunidades, ultimo_calculo_em'
-        )
-        .eq(
-          'usuario_id',
-          data.session.user.id
-        )
-        .single()
+      const { data: poupancaData } =
+        await supabase
+          .from('poupancas')
+          .select(
+            'saldo_subunidades, ultimo_calculo_em'
+          )
+          .eq(
+            'usuario_id',
+            data.session.user.id
+          )
+          .single()
 
-    if (poupancaData) {
-      setPoupanca(poupancaData)
+      if (poupancaData) {
+        setPoupanca(poupancaData)
+      }
+    }, 30000)
+
+    return () => {
+      clearInterval(intervalo)
     }
-  }, 30000)
-
-  return () => {
-    clearInterval(intervalo)
-  }
-}, [])
+  }, [])
 
   async function verificarSessao() {
     setCarregando(true)
 
-    const { data } = await supabase.auth.getSession()
+    const { data } =
+      await supabase.auth.getSession()
 
     if (data.session) {
-      await carregarDashboard(data.session.user.id)
+      await carregarDashboard(
+        data.session.user.id
+      )
+
       setUsuarioLogado(true)
     }
 
@@ -286,12 +282,14 @@ function App() {
   }
 
   async function carregarDashboard(userId: string) {
-    const { data: perfilData, error: perfilError } =
-      await supabase
-        .from('usuarios')
-        .select('nome, username')
-        .eq('id', userId)
-        .single()
+    const {
+      data: perfilData,
+      error: perfilError,
+    } = await supabase
+      .from('usuarios')
+      .select('nome, username')
+      .eq('id', userId)
+      .single()
 
     if (perfilError) {
       console.error(
@@ -301,12 +299,14 @@ function App() {
       return
     }
 
-    const { data: contaData, error: contaError } =
-      await supabase
-        .from('contas')
-        .select('id, saldo_subunidades')
-        .eq('usuario_id', userId)
-        .single()
+    const {
+      data: contaData,
+      error: contaError,
+    } = await supabase
+      .from('contas')
+      .select('id, saldo_subunidades')
+      .eq('usuario_id', userId)
+      .single()
 
     if (contaError) {
       console.error(
@@ -316,17 +316,19 @@ function App() {
       return
     }
 
-    const { data: transacoesData, error: transacoesError } =
-      await supabase
-        .from('historico_transacoes')
-        .select('*')
-        .or(
-          `conta_origem_id.eq.${contaData.id},conta_destino_id.eq.${contaData.id}`
-        )
-        .order('criado_em', {
-          ascending: false,
-        })
-        .limit(20)
+    const {
+      data: transacoesData,
+      error: transacoesError,
+    } = await supabase
+      .from('historico_transacoes')
+      .select('*')
+      .or(
+        `conta_origem_id.eq.${contaData.id},conta_destino_id.eq.${contaData.id}`
+      )
+      .order('criado_em', {
+        ascending: false,
+      })
+      .limit(20)
 
     if (transacoesError) {
       console.error(
@@ -346,7 +348,10 @@ function App() {
 
     setCarregandoHistorico(true)
 
-    const { data, error } = await supabase
+    const {
+      data,
+      error,
+    } = await supabase
       .from('historico_transacoes')
       .select('*')
       .or(
@@ -361,6 +366,7 @@ function App() {
         'Erro ao carregar histórico:',
         error
       )
+
       setCarregandoHistorico(false)
       return
     }
@@ -372,8 +378,11 @@ function App() {
   async function carregarPoupanca() {
     setErroPoupanca('')
 
-    const { error: atualizarError } =
-      await supabase.rpc('atualizar_poupanca')
+    const {
+      error: atualizarError,
+    } = await supabase.rpc(
+      'atualizar_poupanca'
+    )
 
     if (atualizarError) {
       console.error(
@@ -388,15 +397,19 @@ function App() {
       return
     }
 
-    const { data: sessionData } =
-      await supabase.auth.getSession()
+    const {
+      data: sessionData,
+    } = await supabase.auth.getSession()
 
     if (!sessionData.session) return
 
     const userId =
       sessionData.session.user.id
 
-    const { data, error } = await supabase
+    const {
+      data,
+      error,
+    } = await supabase
       .from('poupancas')
       .select(
         'saldo_subunidades, ultimo_calculo_em'
@@ -453,7 +466,10 @@ function App() {
       return
     }
 
-    const { data, error } =
+    const {
+      data,
+      error,
+    } =
       await supabase.auth.signInWithPassword({
         email: emailData,
         password: senha,
@@ -574,18 +590,14 @@ function App() {
       return
     }
 
-    const taxa = 10000
-    const total =
-      valorSubunidades + taxa
-
     if (
       conta.saldo_subunidades <
-      total
+      valorSubunidades
     ) {
       alert(
         `Saldo insuficiente.\n\nValor: ${formatarDIN(
           valorSubunidades
-        )} DIN\nTaxa: 1,00 DIN`
+        )} DIN`
       )
 
       return
@@ -598,9 +610,8 @@ function App() {
           `Valor: ${formatarDIN(
             valorSubunidades
           )} DIN\n` +
-          `Taxa: 1,00 DIN\n` +
           `Total: ${formatarDIN(
-            total
+            valorSubunidades
           )} DIN`
       )
 
@@ -608,7 +619,9 @@ function App() {
 
     setTransferindo(true)
 
-    const { error } =
+    const {
+      error,
+    } =
       await supabase.rpc(
         'transferir_din',
         {
@@ -704,7 +717,9 @@ function App() {
 
     setDepositando(true)
 
-    const { error } =
+    const {
+      error,
+    } =
       await supabase.rpc(
         'depositar_poupanca',
         {
@@ -788,7 +803,9 @@ function App() {
 
     setResgatando(true)
 
-    const { error } =
+    const {
+      error,
+    } =
       await supabase.rpc(
         'resgatar_poupanca',
         {
@@ -1388,6 +1405,7 @@ function App() {
                         setDestinatarioUsername(
                           e.target.value
                         )
+
                         setDestinatario(
                           null
                         )
@@ -1477,15 +1495,45 @@ function App() {
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm">
                   <div className="flex justify-between">
                     <span className="text-white/45">
-                      Taxa
+                      Valor da transferência
                     </span>
 
                     <span>
-                      1,00 DIN
+                      {formatarDIN(
+                        converterParaSubunidades(
+                          valor
+                        ) ?? 0
+                      )}{' '}
+                      DIN
                     </span>
                   </div>
 
                   <div className="mt-2 flex justify-between">
+                    <span className="text-white/45">
+                      Taxa
+                    </span>
+
+                    <span className="text-emerald-300">
+                      0,00 DIN
+                    </span>
+                  </div>
+
+                  <div className="mt-2 flex justify-between border-t border-white/10 pt-2 font-semibold">
+                    <span>
+                      Total
+                    </span>
+
+                    <span>
+                      {formatarDIN(
+                        converterParaSubunidades(
+                          valor
+                        ) ?? 0
+                      )}{' '}
+                      DIN
+                    </span>
+                  </div>
+
+                  <div className="mt-3 flex justify-between">
                     <span className="text-white/45">
                       Saldo disponível
                     </span>
@@ -1982,3 +2030,4 @@ function App() {
 }
 
 export default App
+
