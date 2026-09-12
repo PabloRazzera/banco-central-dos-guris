@@ -238,8 +238,39 @@ function App() {
     useState(false)
 
   useEffect(() => {
-    verificarSessao()
-  }, [])
+  verificarSessao()
+
+  const intervalo = setInterval(async () => {
+    const { data } =
+      await supabase.auth.getSession()
+
+    if (!data.session) return
+
+    await carregarDashboard(
+      data.session.user.id
+    )
+
+    const { data: poupancaData } =
+      await supabase
+        .from('poupancas')
+        .select(
+          'saldo_subunidades, ultimo_calculo_em'
+        )
+        .eq(
+          'usuario_id',
+          data.session.user.id
+        )
+        .single()
+
+    if (poupancaData) {
+      setPoupanca(poupancaData)
+    }
+  }, 30000)
+
+  return () => {
+    clearInterval(intervalo)
+  }
+}, [])
 
   async function verificarSessao() {
     setCarregando(true)
