@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import {
   ArrowDownLeft,
@@ -481,23 +480,25 @@ function App() {
     setDestinatario(null)
 
     const {
-      data: usuarioData,
-      error: usuarioError,
-    } = await supabase
-      .from('usuarios')
-      .select(
-        'id, nome, username'
-      )
-      .eq(
-        'username',
-        nomeBusca
-      )
-      .single()
+      data,
+      error,
+    } = await supabase.rpc(
+      'buscar_destinatario',
+      {
+        p_username: nomeBusca,
+      }
+    )
 
     if (
-      usuarioError ||
-      !usuarioData
+      error ||
+      !data ||
+      data.length === 0
     ) {
+      console.error(
+        'Erro ao buscar destinatário:',
+        error
+      )
+
       alert(
         'Usuário não encontrado.'
       )
@@ -506,43 +507,10 @@ function App() {
       return
     }
 
-    const {
-      data: contaData,
-      error: contaError,
-    } = await supabase
-      .from('contas')
-      .select('id')
-      .eq(
-        'usuario_id',
-        usuarioData.id
-      )
-      .single()
-
-    if (
-      contaError ||
-      !contaData
-    ) {
-      alert(
-        'Conta do usuário não encontrada.'
-      )
-
-      setBuscandoDestinatario(false)
-      return
-    }
-
-    if (
-      conta?.id === contaData.id
-    ) {
-      alert(
-        'Você não pode transferir para sua própria conta.'
-      )
-
-      setBuscandoDestinatario(false)
-      return
-    }
+    const usuarioData = data[0]
 
     setDestinatario({
-      conta_id: contaData.id,
+      conta_id: usuarioData.conta_id,
       nome: usuarioData.nome,
       username: usuarioData.username,
     })
@@ -1983,5 +1951,3 @@ function App() {
 }
 
 export default App
-
-
