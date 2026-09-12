@@ -1045,10 +1045,18 @@ function App() {
             <h1 className="text-3xl font-bold tracking-tight">
               Banco Central dos Guris
             </h1>
+            
+<p className="mt-2 text-sm text-white/50">
+  Seu banco. Seu DIN. Seu controle.
+</p>
 
-            <p className="mt-2 text-sm text-white/50">
-              Seu banco. Seu DIN. Seu controle.
-            </p>
+<a
+  href={`${import.meta.env.BASE_URL}banco-central-dos-guris.apk`}
+  download
+  className="mx-auto mt-5 flex w-fit items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-semibold text-white/70 transition hover:bg-white/[0.09] hover:text-white"
+>
+  📱 Baixar aplicativo Android
+</a>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl">
