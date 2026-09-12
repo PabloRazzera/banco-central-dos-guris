@@ -3,6 +3,6 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  base: process.env.VITE_APP_BASE || '/',
+  base: '/banco-central-dos-guris/',
   plugins: [react(), tailwindcss()],
 })
